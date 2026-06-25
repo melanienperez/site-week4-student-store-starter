@@ -107,15 +107,15 @@ Deployed Application (optional): n/a
 
 * Did the topics discussed in your labs prepare you to complete the assignment? Be specific, which features in your weekly assignment did you feel unprepared to complete?
 
-Add your response here
+Yes, all the topics discussed in the labs prepared me to complete the assignment, specifically the labs. It was useful to be able to practice with Postman and Prisma Studio.
 
 * If you had more time, what would you have done differently? Would you have added additional features? Changed the way your project responded to a particular event, etc.
   
-Add your response here
+If I had more time I would've taken more time to understand more in depth how the backend is connecting to the front end. I would also go ahead and try to deploy the website as it will be useful for the Capstone project. 
 
 * Reflect on your project demo, what went well? Were there things that maybe didn't go as planned? Did you notice something that your peer did that you would like to try next time?
 
-Add your response here
+Something I think went well on my project was that I went straight to the point, however I do have practice more when it comes to answering audience questions.
 
 ### Open-source libraries used
 
