@@ -300,3 +300,50 @@ Create an order and all of its order items atomically, with a computed `totalPri
 
 - `totalPrice` is stored on `Order` as a snapshot value for historical reporting.
 - `OrderItem.price` stores purchase-time price so future product price changes do not rewrite historical orders.
+
+## Decision Logs
+
+### Product Model Decisions
+
+- **Schema translation that went smoothly**: `id` + `@default(autoincrement())` and required strings mapped directly from spec to Prisma with no conversion issues.
+- **Field decision I made during implementation that was not in the original spec**: Kept `price` as `Float` to match the current course scaffold and seed format, while validating `price` as numeric in create/update route handlers.
+- **Route behavior that needed a spec update**: Added explicit query parameter behavior for `GET /products` (`category`, `sort`, and defaults), and documented how invalid `sort` and unmatched `category` values are handled.
+
+## Spec Reconciliation -- Milestone 4 (Schema Audit)
+
+### Schema vs. spec gaps found
+
+- Initially, `schema.prisma` had `Product` and `Order` but was missing `OrderItem`; added `OrderItem` with all required fields (`orderId`, `productId`, `quantity`, `price`, timestamps).
+- Added missing relation array fields in parent models (`Product.orderItems` and `Order.orderItems`) so schema now reflects the one-to-many relationships documented in the Data Models section.
+- `OrderItem.price` remained `Float` and is explicitly treated as purchase-time unit price in route/model logic, consistent with the spec.
+
+### Cascade delete verification
+
+- Deleting a Product removes associated OrderItems: ✅ tested
+- Deleting an Order removes associated OrderItems: ✅ tested
+
+### Order Creation Transaction Decisions
+
+- **What my Transactional Flow spec got right**: The sequence in the spec matched implementation: validate body, verify product IDs, compute total, create order with items, return order with `orderItems`.
+- **What the spec missed that I discovered during implementation**: I needed explicit validation for each item (`productId` integer and `quantity` > 0), so malformed items return a clear `400` before any DB write.
+- **How the transaction error handling works**: `prisma.$transaction` wraps all writes as one unit; if any step throws (like missing product), Prisma rolls back all writes so no partial order or orphaned order items are saved.
+- **One thing I'd design differently if starting over**: I would add an explicit `ORDER_STATUS` enum in Prisma instead of free-form `String` for `status`, to prevent invalid status values at the schema level.
+
+## Final Spec Reconciliation: Project Complete
+
+### Full-system audit result
+
+- Product browsing flow aligns with contract: frontend reads `GET /products` response as `{ products: [...] }` and item detail reads `GET /products/:productId` as `{ product: {...} }`.
+- Checkout flow aligns with contract: frontend sends `POST /orders` body with `customer`, `status`, and `items`, and receives `{ order: {..., orderItems: [...] } }`.
+- Added backend CORS middleware (`app.use(cors())`) to allow frontend integration from a separate dev origin.
+
+### Gaps resolved during frontend integration
+
+- Frontend scaffold originally expected a different checkout response (`order.purchase.receipt`) and no longer matched the API contract; UI now renders confirmation from the actual API order shape (`id`, `customer`, `status`, `totalPrice`, `orderItems`).
+- `ProductDetail` previously referenced `image_url`; backend returns `imageUrl`, so the component was updated to use `imageUrl`.
+- Payment form state mapping was inconsistent (`id`/`email` instead of `name`/`dorm_number`), which prevented clean request payload creation; corrected to match app state and checkout parsing.
+
+### What the spec enabled during this project
+
+The written API contract made it faster to identify where frontend assumptions diverged from backend responses, especially around checkout response shape and product field naming. Having the transaction flow documented up front also reduced debugging time by making rollback and error-case expectations explicit before testing end-to-end.
+
