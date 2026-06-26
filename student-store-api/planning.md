@@ -343,7 +343,4 @@ Create an order and all of its order items atomically, with a computed `totalPri
 - `ProductDetail` previously referenced `image_url`; backend returns `imageUrl`, so the component was updated to use `imageUrl`.
 - Payment form state mapping was inconsistent (`id`/`email` instead of `name`/`dorm_number`), which prevented clean request payload creation; corrected to match app state and checkout parsing.
 
-### What the spec enabled during this project
-
-The written API contract made it faster to identify where frontend assumptions diverged from backend responses, especially around checkout response shape and product field naming. Having the transaction flow documented up front also reduced debugging time by making rollback and error-case expectations explicit before testing end-to-end.
 
